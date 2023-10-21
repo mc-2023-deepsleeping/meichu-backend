@@ -2,3 +2,4 @@ __pycache__/
 *.py[cod]
 test_*.py
 traced_model.pt
+static/
