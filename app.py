@@ -126,7 +126,7 @@ def attd_rec():
         ret_val['data'].append({
             'empID': result[0],
             'status': arrival_status,
-            'date': arrival_time,
+            'date': result[1],
             'area': result[4],
             'hostID': result[5],
             'hostEmail': result[6]
