@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json
 from flask import Response
 import cv2
+import re
+from datetime import datetime, timedelta
 
 from sql import conn
 from yolo import detect
@@ -63,11 +65,6 @@ def upload_image():
 
 @app.route('/attd_rec', methods=['GET'])
 def attd_rec():
-    # if 'message' not in request.form:
-    #     return Response('No message provided', 400)
-    
-    # prompt = request.form['message']
-
     command = """
     SELECT EmpEntry.EmpID, EmpEntry.DateTime, Emp.EmpShift, Emp.DeptId, Emp.Zone, EmpHost.Host, EmpHost.HostEmail
         FROM EmpEntry LEFT JOIN Emp ON EmpEntry.EmpID = Emp.id
@@ -75,16 +72,27 @@ def attd_rec():
     """
     with conn.cursor() as cursor:
         cursor.execute(command)
-        # conn.commit()
         results = cursor.fetchall()
 
     ret_val = { 'data': [] }
 
-    for result in results: 
+    print(results[0])
+
+    for result in results:       
+        arrival_time = datetime.strptime(result[1], '%m/%d/%Y %H:%M')
+        target_time = datetime.strptime(result[2], '%H:%M')
+        half_an_hour = timedelta(minutes=30)
+        
+        if arrival_time.time() < (target_time - half_an_hour).time():
+            arrival_status = 'early'
+        elif arrival_time.time() > (target_time + half_an_hour).time():
+            arrival_status = 'late'
+        else:
+            arrival_status = 'normal'
+
         ret_val['data'].append({
             'empID': result[0],
-            # 'empEmail': result[6],
-            'onTime': '',
+            'status': arrival_status,
             'area': result[4],
             'hostID': result[5],
             'hostEmail': result[6]
@@ -93,4 +101,4 @@ def attd_rec():
     return jsonify(ret_val)
 
 if __name__ == '__main__':
-    app.run('127.0.0.1', port=5000, debug=True)
+    app.run('0.0.0.0', port=5000, debug=True)
