@@ -198,5 +198,16 @@ def scan_time():
     
     return jsonify(ret_val)
 
+@app.route('/ask_bard', methods=['POST'])
+def ask_bard():
+    if 'Img' not in request.files:
+        answer = bard.get_answer(request.form['Question'])['content']
+    else:
+        answer = bard.ask_about_image(request.form['Question'], request.files['Img'].read())['content']
+
+    ret_val = {'answer': answer}
+
+    return jsonify(ret_val)
+
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
