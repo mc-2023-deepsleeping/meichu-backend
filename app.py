@@ -147,12 +147,7 @@ def sec_stat():
         GROUP BY subquery.EmpEntryID, subquery.Classification, subquery.Zone, subquery.Host, subquery.HostEmail
         HAVING COUNT(*) > 1;
     """
-
-    #     SELECT contraband.EmpEntryID, contraband.Classification, 
-    #     Emp.Zone, EmpHost.Host, EmpHost.HostEmail
-    # FROM contraband
-    # LEFT JOIN Emp ON contraband.EmpEntryID = Emp.id
-    # LEFT JOIN EmpHost ON contraband.EmpEntryID = EmpHost.id
+    
     with conn.cursor() as cursor:
         cursor.execute(command)
         results = cursor.fetchall()
@@ -162,7 +157,14 @@ def sec_stat():
     for result in results:
         emp_id, cls_name, area, host_name, host_email, count = result
 
-        if emp_id not in ret_val['data']:
+        for entry in ret_val['data']:
+            if entry['empID'] == emp_id:
+                entry['item'].append({
+                    'type': cls_name,
+                    'number': count
+                })
+                break
+        else: 
             ret_val['data'].append({
                 'empID': emp_id,
                 'item': [{
@@ -173,41 +175,6 @@ def sec_stat():
                 'hostID': host_name,
                 'hostEmail': host_email
             })
-        else:
-            # ret_val['data']
-            ...
-
-            
-        #     if emp_id not in ret_val['data']:
-        #         ret_val['data'].append({
-        #             'empID': emp_id,
-        #             'item': [],
-        #             'area': area,
-        #             'hostID': host_name,
-        #             'hostEmail': host_email
-        #         })
-        #     else:
-        #         for entry in ret_val['data']:
-        #             if entry['empID'] == emp_id:
-        #                 entry['item'].append({'clsName': cls_name, 'count': count})
-
-        # print(ret_val)
-        # {
-        #     data: [
-        #         {
-        #             empID: int,
-        #             item: [
-        #                 {
-        #                     type: string,   // The type of invalid items
-        #                     number: int,    // The number of invalid items
-        #                 }
-        #             ]
-        #             area: string,   // AZ or HQ
-        #             hostID: int,
-        #             hostEmail: string
-        #         }
-        #     ]
-        # }
     
     return jsonify(ret_val)
 
