@@ -8,12 +8,6 @@ ENV LC_ALL C.UTF-8
 
 # Install python 3.10
 RUN apt-get update -y && apt-get upgrade --no-install-recommends -y
-# RUN apt-get install build-essential -y
-
-# Install pip
-# RUN apt-get install curl -y
-# RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-# RUN python3.10 get-pip.py
 
 # set work directory
 RUN mkdir -p /opt/app

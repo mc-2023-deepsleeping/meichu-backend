@@ -11,6 +11,10 @@ PATH = './static'
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def home():
+    return Response('Hello World!', 200)
+
 @app.route('/upload', methods=['POST', 'GET'])
 def upload_image():
     if 'Img' not in request.files:
@@ -170,7 +174,7 @@ def sec_stat():
                 'hostEmail': host_email
             })
         else:
-            ret_val['data']
+            # ret_val['data']
             ...
 
             
