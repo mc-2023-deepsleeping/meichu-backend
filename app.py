@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 
 from sql import conn
 from yolo import detect
+from lstm_pred import predict
+from bard import bard
 
 PATH = './static'
 
@@ -147,7 +149,7 @@ def sec_stat():
         GROUP BY subquery.EmpEntryID, subquery.Classification, subquery.Zone, subquery.Host, subquery.HostEmail
         HAVING COUNT(*) > 1;
     """
-    
+
     with conn.cursor() as cursor:
         cursor.execute(command)
         results = cursor.fetchall()
@@ -175,6 +177,24 @@ def sec_stat():
                 'hostID': host_name,
                 'hostEmail': host_email
             })
+    
+    return jsonify(ret_val)
+
+@app.route('/scan_time', methods=['POST'])
+def scan_time():
+    command = "SELECT ToolScanTime.time FROM ToolScanTime LIMIT 30;"
+
+    with conn.cursor() as cursor:
+        cursor.execute(command)
+        results = cursor.fetchall()
+
+    date_start = datetime.strptime(request.form['DateTime'], '%m/%d/%Y')
+
+    seq = [x[0] for x in results]
+
+    seq, days_after = predict(seq)
+    
+    ret_val = { 'data': [seq] , 'date': (date_start + timedelta(days=days_after)).strftime('%m/%d/%Y')}
     
     return jsonify(ret_val)
 
