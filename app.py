@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, j
 from flask import Response
 import cv2
 import re
+from flask_cors import CORS
 from datetime import datetime, timedelta
 
 from sql import conn
@@ -12,6 +13,7 @@ from bard import bard
 PATH = './static'
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/', methods=['GET'])
 def home():
