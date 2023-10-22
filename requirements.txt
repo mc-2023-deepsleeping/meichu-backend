@@ -36,7 +36,8 @@ thop  # FLOPs computation
 # roboflow
 
 Flask==2.2.5
-Flask-Cors==3.0.10
+Flask-RESTful==0.3.10
+Flask-Cors==4.0.0
 numpy>=1.18.5,<1.24.0
 # opencv-python>=4.1.1
 opencv-python-headless
