@@ -4,12 +4,14 @@ import cv2
 import re
 from flask_cors import CORS, cross_origin
 from datetime import datetime, timedelta
+# from json import 
 
 from sql import conn
 from yolo import detect
 from lstm_pred import predict
 from bard import bard
 from trans import translator
+from openaiBot import agent_executor
 
 PATH = './static'
 
@@ -32,6 +34,8 @@ def home():
 
 @app.route('/upload', methods=['POST', 'GET'])
 def upload_image():
+    req_form = eval(request.data)
+    
     if 'Img' not in request.files:
         return Response('No image provided', 400)
     
@@ -39,7 +43,7 @@ def upload_image():
     filename = image.filename
 
     try:
-        emp_id = int(request.form['EmpId'])
+        emp_id = int(req_form['EmpId'])
     except:
         return Response('No user id provided', 400)
 
@@ -58,7 +62,7 @@ def upload_image():
             cursor.execute(command)
 
         command = f"INSERT INTO EmpEntry (EmpID, DateTime, ToolScanTime, Img) VALUES \
-            ({emp_id}, '{request.form['DateTime']}', {float(request.form['ToolScanTime'])}, '{result_path}');"
+            ({emp_id}, '{req_form['DateTime']}', {float(req_form['ToolScanTime'])}, '{result_path}');"
         cursor.execute(command)
         conn.commit()   
 
@@ -75,7 +79,7 @@ def upload_image():
         cursor.execute(f"SELECT Emp.EmpShift, Emp.Zone FROM Emp WHERE id={emp_id}")
         emp_shift, area = cursor.fetchone()
 
-    arrival_time = datetime.strptime(request.form['DateTime'], '%m/%d/%Y %H:%M')
+    arrival_time = datetime.strptime(req_form['DateTime'], '%m/%d/%Y %H:%M')
     target_time = datetime.strptime(emp_shift, '%H:%M')
     half_an_hour = timedelta(minutes=30)
         
@@ -105,10 +109,10 @@ def upload_image():
 
 # @app.route('/chat', methods=['POST', 'GET'])
 # def chat():
-#     if 'message' not in request.form:
+#     if 'message' not in req_form:
 #         return Response('No message provided', 400)
     
-#     prompt = request.form['message']
+#     prompt = req_form['message']
 
 #     response = ''
 
@@ -209,13 +213,14 @@ def sec_stat():
 
 @app.route('/scan_time', methods=['POST'])
 def scan_time():
+    req_form = eval(request.data)
     command = "SELECT ToolScanTime.time FROM ToolScanTime LIMIT 30;"
 
     with conn.cursor() as cursor:
         cursor.execute(command)
         results = cursor.fetchall()
 
-    date_start = datetime.strptime(request.form['DateTime'], '%m/%d/%Y')
+    date_start = datetime.strptime(req_form['DateTime'], '%m/%d/%Y')
 
     seq = [x[0] for x in results]
 
@@ -231,10 +236,12 @@ def scan_time():
 
 @app.route('/ask_bard', methods=['POST'])
 def ask_bard():
+    req_form = eval(request.data)
+    
     if 'Img' not in request.files:
-        answer = bard.get_answer(request.form['Question'])['content']
+        answer = bard.get_answer(req_form['Question'])['content']
     else:
-        answer = bard.ask_about_image(request.form['Question'], request.files['Img'].read())['content']
+        answer = bard.ask_about_image(req_form['Question'], request.files['Img'].read())['content']
 
     ret_val = {'answer': answer}
     response = jsonify(ret_val)
@@ -244,16 +251,17 @@ def ask_bard():
     # response.headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
     return response
 
-@app.route('/translation', methods=['POST'])
-def translation():
-    ret_val = {'answer': translator.translate(request.form['text'], dest=request.form['lang']).text,
-               'lang': request.form['lang']}
+@app.route('/ask_query', methods=['POST'])
+def ask_query():
+    req_form = eval(request.data)
 
+    result = agent_executor.run(translator.translate(req_form['query'], dest='en').text)
+    print(result)
+    result = translator.translate(result, dest='zh-TW').text
+
+    ret_val = {'answer': result}
     response = jsonify(ret_val)
-    # response.headers.add("Access-Control-Allow-Origin", "*")
-    # response.headers.add("Access-Control-Allow-Credentials", "true")
-    # response.headers.add("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
-    # response.headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+    
     return response
 
 if __name__ == '__main__':
