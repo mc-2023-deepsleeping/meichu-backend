@@ -16,20 +16,18 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.after_request 
-def after_request(response):
-    header = response.headers
-    header['Access-Control-Allow-Origin'] = '*'
-    # Other headers can be added here if needed
-    return response
+# @app.after_request 
+# def after_request(response):
+#     header = response.headers
+#     header['Access-Control-Allow-Origin'] = '*'
+#     # Other headers can be added here if needed
+#     return response
 
 @app.route('/', methods=['GET'])
-@cross_origin()
 def home():
     return Response('Hello World!', 200)
 
 @app.route('/upload', methods=['POST', 'GET'])
-@cross_origin()
 def upload_image():
     if 'Img' not in request.files:
         return Response('No image provided', 400)
@@ -94,8 +92,10 @@ def upload_image():
         'labels': labels,
         'imageLink': result_path
     }
-    
-    return jsonify(ret_val)
+
+    response = jsonify(ret_val)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 # @app.route('/chat', methods=['POST', 'GET'])
 # def chat():
@@ -109,7 +109,6 @@ def upload_image():
 #     return Response(response, 200)
 
 @app.route('/attd_rec', methods=['GET'])
-@cross_origin()
 def attd_rec():
     command = """
     SELECT EmpEntry.EmpID, EmpEntry.DateTime, Emp.EmpShift, Emp.DeptId, Emp.Zone, EmpHost.Host, EmpHost.HostEmail
@@ -144,11 +143,11 @@ def attd_rec():
             'hostID': result[5],
             'hostEmail': result[6]
         })
-    
-    return jsonify(ret_val)
+    response = jsonify(ret_val)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/sec_stat', methods=['GET'])
-@cross_origin()
 def sec_stat():
     command = """
         SELECT subquery.EmpEntryID, subquery.Classification, 
@@ -192,11 +191,11 @@ def sec_stat():
                 'hostID': host_name,
                 'hostEmail': host_email
             })
-    
-    return jsonify(ret_val)
+    response = jsonify(ret_val)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/scan_time', methods=['POST'])
-@cross_origin()
 def scan_time():
     command = "SELECT ToolScanTime.time FROM ToolScanTime LIMIT 30;"
 
@@ -211,11 +210,11 @@ def scan_time():
     seq, days_after = predict(seq)
     
     ret_val = { 'data': [seq] , 'date': (date_start + timedelta(days=days_after)).strftime('%m/%d/%Y')}
-    
-    return jsonify(ret_val)
+    response = jsonify(ret_val)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/ask_bard', methods=['POST'])
-@cross_origin()
 def ask_bard():
     if 'Img' not in request.files:
         answer = bard.get_answer(request.form['Question'])['content']
@@ -223,8 +222,9 @@ def ask_bard():
         answer = bard.ask_about_image(request.form['Question'], request.files['Img'].read())['content']
 
     ret_val = {'answer': answer}
-
-    return jsonify(ret_val)
+    response = jsonify(ret_val)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
