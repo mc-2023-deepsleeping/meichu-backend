@@ -45,3 +45,5 @@ pymysql
 python-dotenv
 
 bardapi
+
+googletrans==3.1.0a0

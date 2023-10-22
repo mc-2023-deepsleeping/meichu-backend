@@ -9,6 +9,7 @@ from sql import conn
 from yolo import detect
 from lstm_pred import predict
 from bard import bard
+from trans import translator
 
 PATH = './static'
 
@@ -16,12 +17,12 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-# @app.after_request 
-# def after_request(response):
-#     header = response.headers
-#     header['Access-Control-Allow-Origin'] = '*'
-#     # Other headers can be added here if needed
-#     return response
+@app.after_request 
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*'
+    # Other headers can be added here if needed
+    return response
 
 @app.route('/', methods=['GET'])
 def home():
@@ -94,7 +95,9 @@ def upload_image():
     }
 
     response = jsonify(ret_val)
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 # @app.route('/chat', methods=['POST', 'GET'])
@@ -144,7 +147,9 @@ def attd_rec():
             'hostEmail': result[6]
         })
     response = jsonify(ret_val)
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 @app.route('/sec_stat', methods=['GET'])
@@ -192,7 +197,9 @@ def sec_stat():
                 'hostEmail': host_email
             })
     response = jsonify(ret_val)
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 @app.route('/scan_time', methods=['POST'])
@@ -211,7 +218,9 @@ def scan_time():
     
     ret_val = { 'data': [seq] , 'date': (date_start + timedelta(days=days_after)).strftime('%m/%d/%Y')}
     response = jsonify(ret_val)
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 @app.route('/ask_bard', methods=['POST'])
@@ -223,7 +232,20 @@ def ask_bard():
 
     ret_val = {'answer': answer}
     response = jsonify(ret_val)
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
+
+@app.route('/translation', methods=['POST'])
+def translation():
+    ret_val = {'answer': translator.translate(request.form['text'], dest=request.form['lang']).text,
+               'lang': request.form['lang']}
+
+    response = jsonify(ret_val)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 if __name__ == '__main__':
