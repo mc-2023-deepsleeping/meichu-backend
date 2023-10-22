@@ -34,8 +34,9 @@ def home():
 
 @app.route('/upload', methods=['POST', 'GET'])
 def upload_image():
+    print(request.data)
+    print(request.files)
     req_form = eval(request.data)
-    
     if 'Img' not in request.files:
         return Response('No image provided', 400)
     
