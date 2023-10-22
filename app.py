@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, j
 from flask import Response
 import cv2
 import re
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from datetime import datetime, timedelta
 
 from sql import conn
@@ -13,13 +13,16 @@ from bard import bard
 PATH = './static'
 
 app = Flask(__name__)
-CORS(app)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/', methods=['GET'])
+@cross_origin()
 def home():
     return Response('Hello World!', 200)
 
 @app.route('/upload', methods=['POST', 'GET'])
+@cross_origin()
 def upload_image():
     if 'Img' not in request.files:
         return Response('No image provided', 400)
@@ -99,6 +102,7 @@ def upload_image():
 #     return Response(response, 200)
 
 @app.route('/attd_rec', methods=['GET'])
+@cross_origin()
 def attd_rec():
     command = """
     SELECT EmpEntry.EmpID, EmpEntry.DateTime, Emp.EmpShift, Emp.DeptId, Emp.Zone, EmpHost.Host, EmpHost.HostEmail
@@ -137,6 +141,7 @@ def attd_rec():
     return jsonify(ret_val)
 
 @app.route('/sec_stat', methods=['GET'])
+@cross_origin()
 def sec_stat():
     command = """
         SELECT subquery.EmpEntryID, subquery.Classification, 
@@ -184,6 +189,7 @@ def sec_stat():
     return jsonify(ret_val)
 
 @app.route('/scan_time', methods=['POST'])
+@cross_origin()
 def scan_time():
     command = "SELECT ToolScanTime.time FROM ToolScanTime LIMIT 30;"
 
@@ -202,6 +208,7 @@ def scan_time():
     return jsonify(ret_val)
 
 @app.route('/ask_bard', methods=['POST'])
+@cross_origin()
 def ask_bard():
     if 'Img' not in request.files:
         answer = bard.get_answer(request.form['Question'])['content']
