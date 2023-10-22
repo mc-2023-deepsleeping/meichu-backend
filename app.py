@@ -14,7 +14,9 @@ from trans import translator
 PATH = './static'
 
 app = Flask(__name__)
-cors = CORS(app)
+# cors = CORS(app)
+CORS(app, resources={r"/*":{"origins":"*"}})
+
 # app.config['CORS_HEADERS'] = 'Content-Type'
 
 # @app.after_request 
