@@ -1,6 +1,6 @@
 import os
-import tkinter as tk
-import tkinter.ttk as ttk
+# import tkinter as tk
+# import tkinter.ttk as ttk
 from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
