@@ -9,12 +9,12 @@ from langchain.agents import AgentExecutor
 from sqlalchemy import create_engine
 
 # 設定 GCP MySQL 連接資訊
-host = "35.236.171.211"
+host = "***"
 port = "3306"
 user = "root"
-password = "mc2023"
+password = "***"
 db_name = "meichu"
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = "***"
 
 
 # 創建 MySQL 連接字串
